@@ -1,0 +1,88 @@
+{
+  "index.html": {
+    "refer": [
+      "seatInfo.html",
+      "personInfo.html",
+      "login.html"
+    ],
+    "resources": []
+  },
+  "seatInfo.html": {
+    "resources": [
+      "js/mui.min.js",
+      "js/template-web.js",
+      "css/mui.min.css",
+      "css/style.css",
+      "js/jquery-2.1.4.min.js"
+    ],
+    "refer": [
+      "personInfo.html",
+      "login.html",
+      "subscribeSeat.html",
+      "lookseatScribe.html"
+    ]
+  },
+  "login.html": {
+    "refer": [
+      "seatInfo.html",
+      "register.html",
+      "index.html",
+      "main.html"
+    ],
+    "resources": []
+  },
+  "personInfo.html": {
+    "refer": [
+      "login.html",
+      "index.html",
+      "lookseatScribe.html",
+      "seatInfo.html"
+    ],
+    "resources": [
+      "images/httpimg3.2345.comappimagesimagesupload14388395059292.png"
+    ]
+  },
+  "register.html": {
+    "refer": [
+      "login.html"
+    ],
+    "resources": []
+  },
+  "subscribeSeat.html": {
+    "refer": [
+      "index.html",
+      "personInfo.html",
+      "seatInfo.html",
+      "lookseatScribe.html",
+      "main.html"
+    ],
+    "resources": []
+  },
+  "lookseatScribe.html": {
+    "refer": [
+      "personInfo.html",
+      "index.html",
+      "seatInfo.html",
+      "main.html"
+    ],
+    "resources": []
+  },
+  "register2.html": {
+    "refer": [
+      "login.html"
+    ],
+    "resources": []
+  },
+  "main.html": {
+    "resources": [
+      "seatInfo.html"
+    ],
+    "refer": [
+      "index.html",
+      "personInfo.html",
+      "seatInfo.html",
+      "lookseatScribe.html",
+      "login.html"
+    ]
+  }
+}

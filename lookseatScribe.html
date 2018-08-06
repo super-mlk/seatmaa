@@ -1,0 +1,209 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=DWO9LC3WbnGKvkjsFjHM6YQTPudQ4zr4"></script>
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<style type="text/css">
+	        body, html,#allmap {width: 100%;height: 100%;overflow: hidden;margin:0;font-family:"微软雅黑";}
+	    </style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+		    <h1 class="mui-title">座位预约情况</h1>
+		</header>
+		<div class="mui-content" id="seatScribeList">
+			<script type="text/html" id="lookseatScribe">
+			    {{each lookseatScribe as lookseatScribe}}
+			       <ul class="mui-table-view">
+			    		<li class="mui-table-view-cell">
+		            		学号:{{lookseatScribe.nightjobnum}}{{lookseatScribe.amjobnum}}{{lookseatScribe.pmjobnum}}
+			            </li>
+			    	    <li class="mui-table-view-cell">
+		                   	预约座位:<b>{{lookseatScribe.aarea}}</b>&<span>{{lookseatScribe.aSeat}}</span>
+			            </li>
+			            <li class="mui-table-view-cell">
+		                   	预约日期:{{lookseatScribe.nightTimeslot}}{{lookseatScribe.amTimeslot}}{{lookseatScribe.pmTimeslot}}
+			            </li>
+			            <li class="mui-table-view-cell">
+		                   	预约时间段:{{lookseatScribe.pmseatInfo || lookseatScribe.amseatInfo || lookseatScribe.nseatInfo}}
+			            </li>
+			        </ul>
+		    	{{/each}}
+		    </script>
+		</div>
+		<div class="mui-button-row">
+	        <button type="button" class="mui-btn mui-btn-primary" id="submitScribeBtn">确认预约</button>
+	        <button type="button" class="mui-btn mui-btn-danger" id="cancleScribeBtn">取消预约</button>
+	    </div>
+	    <!--地图存放位置-->
+		<div id="allmap" style="display: none;"></div>
+		<!--地图存放位置-->
+		<script src="js/mui.min.js"></script>
+		<script src="js/template-web.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/jquery-2.1.4.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/proporiesUrl.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			
+			var sutdentJobnum = localStorage.getItem('studentjobnum');
+//			console.log("look"+sutdentJobnum);
+
+			var submitScribeBtn = document.getElementById("submitScribe");
+			 // 百度地图API功能
+		    var map = new BMap.Map("allmap");
+		    var point = new BMap.Point(118.720143,32.208386);//图书馆位置 
+		    map.centerAndZoom(point,16);  
+		    var geolocation = new BMap.Geolocation();
+			mui.init({
+				pullRefresh: {
+					container: '#seatScribeList',
+					down: {
+						style:'circle',
+						callback: pulldownRefresh
+					},
+					up: {
+						auto:true,
+						contentrefresh: '正在加载...',
+						callback: pullupRefresh
+					}
+				}
+			});
+			
+			
+			var count = 0;
+			function pullupRefresh() {
+				setTimeout(function() {
+					mui.ajax(url+'lookseatScribe.php',{
+					data:{  
+						sJobnum:sutdentJobnum,  
+					},
+					dataType:'json',//服务器返回json格式数据
+					type:'post',//HTTP请求类型
+					timeout:10000,//超时时间设置为10秒；
+					success:function(data){
+						//服务器返回响应，根据响应结果，分析是否登录成功；
+						var html = template('lookseatScribe',data);
+						document.getElementById('seatScribeList').innerHTML = html;
+					},
+					error:function(xhr,type,errorThrown){  
+						//异常处理；
+						mui.toast('对不起，您没有预约任何座位');
+					}
+				});
+				}, 1500);
+			}
+
+			function addData() {
+				var table = document.body.querySelector('.mui-table-view');
+				var cells = document.body.querySelectorAll('.mui-table-view-cell');
+				for(var i = cells.length, len = i + 5; i < len; i++) {
+					var li = document.createElement('li');
+					li.className = 'mui-table-view-cell';
+					li.innerHTML = '<a class="mui-navigate-right">Item ' + (i + 1) + '</a>';
+					//下拉刷新，新纪录插到最前面；
+					table.insertBefore(li, table.firstChild);
+				}
+			}
+			/**
+			 * 下拉刷新具体业务实现
+			 */
+			function pulldownRefresh() {
+				mui.ajax(url+'lookseatScribe.php',{
+					data:{  
+						sJobnum:sutdentJobnum,  
+					},
+					dataType:'json',//服务器返回json格式数据
+					type:'post',//HTTP请求类型
+					timeout:10000,//超时时间设置为10秒；
+					success:function(data){
+						//服务器返回响应，根据响应结果，分析是否登录成功；
+						var html = template('lookseatScribe',data);
+						document.getElementById('seatScribeList').innerHTML = html;
+					},
+					error:function(xhr,type,errorThrown){  
+						//异常处理；
+						mui.toast('对不起，您没有预约任何座位');
+					}
+				});
+			}
+			
+			/*确定预约 */
+			$("#submitScribeBtn").click(function(){
+				geolocation.getCurrentPosition(function(r){  
+			        if(this.getStatus() == BMAP_STATUS_SUCCESS){
+			            var pointA = new BMap.Point(r.point.lng,r.point.lat);//你得位置
+//				          	console.log(r.point.lng+","+r.point.lat);   
+//							var pointA = new BMap.Point(118.720143,32.208386);  // 创建点坐标A--当前的位置
+						var pointB = new BMap.Point(118.778021,32.057251);  // 创建点坐标B--图书馆坐标
+						console.log('从当前位置到南京信息工程大学的图书馆距离是：'+(map.getDistance(pointA,pointB)).toFixed(2)+' 米。');  
+						//获取两点距离,保留小数点后两位
+						var distance = (map.getDistance(pointA,pointB)).toFixed(0);
+						if(distance<100){
+							mui.ajax(url+'submitScribe.php',{
+								data:{
+									sJobnum:sutdentJobnum,
+								},
+			//					dataType:'json',//服务器返回json格式数据
+								type:'post',//HTTP请求类型 
+								timeout:10000,//超时时间设置为10秒；
+								success:function(data){
+									console.log(data);    
+									if(data == '1'){
+										mui.toast('更新成功!');
+										mui.openWindow({
+											id : 'main',
+											url : 'main.html',
+										});
+										$("#seatScribeList").text("");
+									}else if(data == '2'){
+										mui.toast('更新失败');
+									}
+								},
+								error:function(xhr,type,errorThrown){
+									mui.toast('对不起，您没有预约任何座位');
+								}
+							});
+						}else{
+							alert("对不起，您不在图书馆附近,不可以预约");
+						}
+			        }
+			        else {
+			            alert('failed'+this.getStatus());
+			        }
+			    },{enableHighAccuracy: true});
+			});
+				
+			/*取消预约 */
+			$("#cancleScribeBtn").click(function(){
+				mui.ajax(url+'submitScribe.php',{
+					data:{
+						sJobnum:sutdentJobnum,
+					},
+//					dataType:'json',//服务器返回json格式数据
+					type:'post',//HTTP请求类型
+					timeout:10000,//超时时间设置为10秒；
+					success:function(data){
+//							console.log(data);    
+						if(data == '1'){
+							mui.toast('取消成功!');
+							mui.openWindow({
+								id : 'main',
+								url : 'main.html',
+							});
+							$("#seatScribeList").text("");
+						}else if(data == '2'){
+							mui.toast('取消失败');
+						}
+					},
+					error:function(xhr,type,errorThrown){
+						mui.toast('对不起，您没有预约任何座位');
+					}
+				}); 
+			});
+		</script>
+	</body>
+
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            margin: 100px auto;
+        }
+
+        tr th {
+            text-align: center;
+        }
+
+        tr td {
+            text-align: center;
+        }
+
+        .table tbody tr td:nth-child(1) {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .table tbody tr td:nth-child(2), .table tbody tr td:nth-child(3) {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .table tbody tr td:nth-child(2) span, .table tbody tr td:nth-child(3) span {
+            color: red;
+        }
+
+    </style>
+</head>
+<body>
+<div class="container" id="app">
+    <nav class="navbar navbar-inverse" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">图书馆座位管理-管理员</a>
+            </div>
+            <div>
+                <ul class="nav navbar-nav">
+                    <li><a href="Administrator.html">登录</a></li>
+                    <li><a href="adminContent.html">查看学生预约信息</a></li>
+                    <li class="active"><a href="#">预约总计</a></li>
+                    <li><a href="clearscribestate.html">清除数据库预约信息</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="panel panel-warning">
+        <div class="panel-heading">
+            <h3 class="panel-title">预约总计</h3>
+        </div>
+        <div class="panel-body">
+            <table class="table" id="table">
+                <caption>预约总计</caption>
+                <thead>
+                <tr>
+                    <th>时间段</th>
+                    <th>当天</th>
+                    <th>本月</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>8:00 ~ 10:30</td>
+                    <td>
+                        {{amcount}}
+                        <span>位</span>
+                    </td>
+                    <td class="ammonthCount">
+                        {{ammonthCount}}
+                        <span>位</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>13:00 ~ 16:00</td>
+                    <td>
+                        {{pmcount}}
+                        <span>位</span>
+                    </td>
+                    <td class="pmmonthCount">
+                        {{pmmonthCount}}
+                        <span>位</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>18:00 ~ 20:30</td>
+                    <td>
+                        {{nightcount}}
+                        <span>位</span>
+                    </td>
+                    <td class="nightmonthCount">
+                        {{nightmonthCount}}
+                        <span>位</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="count">总计</td>
+                    <td>
+                        {{amcount + pmcount + nightcount}}
+                        <span>位</span>
+                    </td>
+                    <td class="monthCount">
+                        {{monthCount}}
+                        <span>位</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="../js/proporiesUrl.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    $(function () {
+        $(".count").css(
+            {
+                "font-size": "18px",
+                "font-weight": "bold",
+                "letter-spacing": '4px',
+            }
+        );
+
+
+        var myDate = new Date();
+        var year = myDate.getFullYear();
+        var localmonth = myDate.getMonth() + 1;
+        var localday = myDate.getDate();
+        var localHours = myDate.getHours();
+        var localMin = myDate.getMinutes();
+
+        if(!isLeapYear(year)){
+            autoclear(29,24,'00');
+        }else{
+            autoclear(28,24,'00');
+        }
+
+        function autoclear(day,hours,min) {
+            if (localmonth == '1' || localmonth == '3' || localmonth == '5' || localmonth == '7' || localmonth == '8' || localmonth == '10' || localmonth == '12') {
+                if ((localday == '31' && localHours == hours && localMin == min)) {
+                    clearZero();
+                } else {
+                    console.log('时间未到清0时间');
+                }
+            } else if (localmonth == '4' || localmonth == '6' || localmonth == '9' || localmonth == '11') {
+                if ((localday == '24' && localHours == hours && localMin == min)) {
+                    clearZero();
+                } else {
+                    console.log('时间未到清0时间');
+                }
+            } else if (localmonth == '2') {
+                if ((localday == day && localHours == hours && localMin == min)) {
+                    clearZero();
+                } else {
+                    console.log('时间未到清0时间');
+                }
+            }
+        }
+
+        function clearZero() {
+            $(".ammonthCount").text(0);
+            $(".pmmonthCount").text(0);
+            $(".nightmonthCount").text(0);
+            $(".monthCount").text(0);
+        }
+
+        function isLeapYear(year) {
+            return (year % 4 == 0) && (year % 100 != 0 || year % 400 == 0);
+        }
+    })
+</script>
+
+
+<script>
+    let vm = new Vue({
+        el: '#app',
+        created(){
+            this.shanShuo();
+            this.getData();
+        },
+        methods: {
+            getData(){
+                axios.get(url + 'scribestateCount.php').then(res => {
+                    this.amcount = res.data[0];
+                    this.pmcount = res.data[1];
+                    this.nightcount = res.data[2];
+                    this.ammonthCount += this.amcount;
+                    this.pmmonthCount += this.pmcount;
+                    this.nightmonthCount += this.nightcount;
+                    this.monthCount += res.data[0] + res.data[1] + res.data[2];
+                    if (res.data == 0) {
+                        alert("对不起，数据错误，请刷新页面");
+                    }
+//                    console.log(res.data[0]);
+                }, err => {
+                    console.log(err);
+                });
+            },
+            shanShuo(){
+                setInterval(function () {
+                    if (this.on) {
+                        $(".count").css("color", 'red');
+                        this.on = false;
+                    } else {
+                        $(".count").css("color", 'blue');
+                        this.on = true;
+                    }
+                }, 500);
+            }
+        },
+        data: {
+//            info:[]
+            amcount: '',
+            pmcount: '',
+            nightcount: '',
+            ammonthCount: '',
+            pmmonthCount: '',
+            nightmonthCount: '',
+            monthCount: "",
+            on: true,
+        },
+    });
+</script>
+</body>
+</html>

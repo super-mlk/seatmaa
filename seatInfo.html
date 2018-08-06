@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" type="text/css" href="css/style.css"/>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+		    <h1 class="mui-title">图书馆座位信息</h1>
+		</header>
+		<div class="mui-content" id="refreshContainer">
+		    <ul class="mui-table-view" id="seatList" style="margin-top: 0;"></ul>
+			<script type="text/html" id="list">
+			    {{each list as list}}
+				    <li class="mui-table-view-cell" id="{{list.addressId}}">
+				        <a class="mui-navigate-right">
+				            {{list.addressId}}<span>:{{list.addressName}}</span>
+				        </a>
+			        </li>
+		    	{{/each}}
+		    </script>
+		</div>
+		
+		
+		<script src="js/mui.min.js"></script>
+		<script src="js/jquery-2.1.4.min.js" charset="utf-8"></script>
+		<script src="js/template-web.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/proporiesUrl.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			
+			mui.plusReady(function(){
+				mui.ajax(url+'list.php',{
+					data:{
+					},
+					dataType:'json',
+					type:'POST',//HTTP请求类型
+					timeout:10000,//超时时间设置为10秒；
+					success:function(data){
+						var html = template('list',data);
+						document.getElementById('seatList').innerHTML = html;
+					},
+					error:function(xhr,type,errorThrown){
+						//异常处理；
+						console.log(type);
+					}
+				});
+				//添加列表项的点击事件
+				mui('#seatList').on('tap', 'li', function(e) {
+				  var aid = this.getAttribute('id');   
+				//打开详情页面          
+				  mui.openWindow({
+				    id:'subscribeSeat',
+				    url : 'subscribeSeat.html',
+				    extras:{
+				    	'aid' : aid
+				    }
+				  });
+				});  
+				
+			})
+		</script>
+	</body>
+
+</html>

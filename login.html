@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title></title>
+    <script src="js/mui.min.js"></script>
+	<script src="js/jquery-2.1.4.min.js" type="text/javascript" charset="utf-8"></script>
+    <link href="css/mui.min.css" rel="stylesheet"/>
+    
+</head>
+<body>
+	<div id="app">
+		<header class="mui-bar mui-bar-nav">
+		    <h1 class="mui-title">登录界面</h1>
+		</header>
+		<div class="mui-content">
+			
+		    <form class="mui-input-group" style="margin-top: 20px;">
+			    <div class="mui-input-row">
+			        <label>学号</label>
+			    	<input type="text" class="mui-input-clear Jobnumber" placeholder="请输入学号" autocomplete="new-Jobnumber">
+			    </div>
+			    <div class="mui-input-row">
+			        <label>密码</label>
+			        <input type="password" class="mui-input-password password" placeholder="请输入密码" autocomplete="new-password">
+			    </div>
+			    <div class="mui-button-row">
+			        <button type="button" class="mui-btn mui-btn-primary" id="login">登录</button>
+			        <button type="reset" class="mui-btn mui-btn-danger" >取消</button>
+			    </div>
+			</form>
+			<div class="mui-button-row"><a id='reg'>注册账号</a></div>
+		</div>
+		<nav class="mui-bar mui-bar-tab" style="position: fixed;bottom: 0;">
+		    <a class="mui-tab-item" id="home">
+		        <span class="mui-icon mui-icon-home"></span>
+		        <span class="mui-tab-label">首页</span>
+		    </a>
+		    <a class="mui-tab-item mui-active" id="login">
+		        <span class="mui-icon mui-icon-qq"></span>
+		        <span class="mui-tab-label">登录</span>
+		    </a>
+		</nav>
+	</div>
+	
+	<script src="js/proporiesUrl.js" type="text/javascript" charset="utf-8"></script>
+	
+	<script>
+		$(function(){
+			var Jnumber = "";
+			var password = "";
+		
+			/*登录判断*/ 
+			$("#login").click(function(){
+				Jnumber = $(".Jobnumber").val();
+				password = $(".password").val();
+				
+				mui.plusReady(function(){
+					mui.ajax(url+'checklogin.php',{
+						data:{
+							Jnumber:Jnumber,
+							password:password
+						}, 
+						type:'POST',//HTTP请求类型
+						timeout:10000,//超时时间设置为10秒；
+						success:function(data){
+							//服务器返回响应，根据响应结果，分析是否登录成功；
+							if(data === '1'){
+							 	mui.toast('登陆成功',{ duration:'short', type:'div' });
+							 	mui.openWindow({
+							 		url : 'main.html',
+							 		id :'main', 
+							 		styles:{
+							 			top:'0'
+							 		},
+							 		extras:{
+							 			'Junmber':Jnumber,
+							 		},
+									createNew:true,
+							 	})
+							}else if(data === '0'){
+								mui.toast('登录失败,请检查学号和密码是否正确!',{ duration:'short', type:'div' });
+							}else if(data === '2' ){
+								mui.toast('学号和密码不能为空!',{ duration:'short', type:'div' });
+							}else if(data === '3'){
+								mui.toast('学号和密码不对!',{ duration:'short', type:'div' });
+							}
+						},
+						error:function(xhr,type,errorThrown){
+							//异常处理；
+							console.log(type);
+						}
+					});
+				
+				});
+			  	
+			})
+		
+			
+			/*首页*/
+			var homeBtn = document.getElementById("home");
+			homeBtn.addEventListener('tap',function(){
+				mui.openWindow({
+					url : 'index.html',
+					id  : 'index',
+					createNew:true,
+				})
+			});
+			
+			/*注册*/
+			var reg = document.getElementById("reg");
+			reg.addEventListener('tap',function(){
+				mui.openWindow({
+					url : 'register.html',
+					id  : 'register',
+					createNew:true,
+				});
+			});
+		})
+			
+	</script>
+</body>
+</html>

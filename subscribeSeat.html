@@ -1,0 +1,324 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="css/mui.picker.min.css" />
+		<link rel="stylesheet" href="css/seatInfo.css" />
+	
+		<style type="text/css">
+	       
+	    </style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav"> 
+		    <a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+		    <h1 class="mui-title">预约座位</h1>
+		</header>
+		
+		<div class="mui-content">
+			<div class="mui-card-header mui-card-media">
+				<img src="img/13.png" />
+				<div class="mui-media-body" id="seatList" >
+					<script type="text/html" id="list">
+						座位预约&
+						{{each list as list}}
+						 	<span id="{{list.aId}}">
+                               <span class="area">{{list.aarea}}</span>
+						 	</span>
+				    	{{/each}}
+				    	<p>您可
+				    		以预约早上、下午和傍晚时间段的座位，当前时间不可以超过三个时间段</p>
+					</script>
+				</div>
+			</div>
+			 
+			<ul class="mui-table-view mui-grid-view">
+			    <li class="mui-table-view-cell mui-media mui-col-xs-12">
+			       <div id="seatmap">				
+					</div>
+			    </li>
+			    
+			</ul>
+		    <form class="mui-input-group">
+			    <div class="mui-input-row">  
+			        <label>学号</label>
+			    	<input type="text" class="mui-input-clear jobnum" value="" name="jobNUm" disabled="disabled">
+			    </div>
+			    <div class="mui-input-row">
+			        <label>姓名</label>
+			        <input type="text" class="mui-input-text name" placeholder="请输入预约姓名" name="name">
+			    </div>
+			     <div class="mui-input-row">
+			        <label>座位号</label>
+			        <input type="text" class="mui-input-text seatinfo" name="seatinfo">
+			    </div>
+			     <div class="mui-input-row" style="display: none;">
+			        <label>座位号</label>
+			        <input type="text" class="mui-input-text seatinfoId" name="seatinfoId">
+			    </div>
+			    <div style="padding:15px;">
+					<button id='showdatePicker' class="mui-btn mui-btn-block" type='button'>选择预约时间</button>
+			    </div>
+			    
+			    <div class="mui-button-row">
+			        <button type="button" class="mui-btn mui-btn-primary" id="submitBtn">确认</button>
+			        <button type="button" class="mui-btn mui-btn-danger" >取消</button>
+			    </div>
+
+			    <div id='cityResult' class="ui-alert"></div>
+			</form>
+			<ul class="mui-table-view" id="seatstate">
+		       <script type="text/html" id="state">
+		       		{{each state as state}}
+			       		<li class="mui-table-view-cell">
+			                8:00 ~ 10:30
+			                <span class="mui-badge mui-badge-success">{{state.amstate}}</span>
+				        </li>
+				        <li class="mui-table-view-cell">
+				        	13:00 ~ 16:00
+				        	<span class="mui-badge mui-badge-success">{{state.pmstate}}</span>
+				        </li>
+				        <li class="mui-table-view-cell">
+				        	18:00 ~ 20:30
+				        	<span class="mui-badge mui-badge-success">{{state.nightstate}}</span> 
+				        </li>
+		       		{{/each}}
+		       </script>
+		    </ul>
+		</div>
+		
+		<script src="js/mui.min.js"></script>
+		<script src="js/template-web.js"></script>
+		<script src="js/jquery-2.1.4.min.js" charset="utf-8"></script>
+		<script src="js/mui.picker.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/date.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript" src="js/jquery.seat-charts.min.js"></script>
+		<script src="js/proporiesUrl.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			mui.init();
+			
+			mui.plusReady(function(){
+				var price = 80; //票价
+				var i = 0;
+				//图形化
+				var $cart = $('#selected-seats'), 
+				$counter = $('#counter'), 
+				$total = $('#total'); 
+				var sc = $('#seatmap').seatCharts({
+					map: [  //座位图
+						'aaaa',
+			            'aaaa',
+					],
+					naming : {
+						top : false,
+						getLabel : function (character, row, column) {
+							return column;
+						}
+					},
+					legend : { //定义图例
+						node : $('#legend'),
+						items : [
+							[ 'a', 'available',   '可选座' ],
+							[ 'a', 'unavailable', '已经被预约']
+						]					
+					},
+					click: function () { //点击事件
+						if (this.status() == 'available' && i == 0) { //可选座
+							$counter.text(sc.find('selected').length+1);
+							$total.text(recalculateTotal(sc)+price);
+							i = 1;
+							
+							$(".seatinfo").val((this.settings.row+1)+'排'+this.settings.label+'座');
+							$(".seatinfoId").val(this.settings.id);
+			//				var seatId = this.settings.id
+			//				$(".seatId").val(this.settings.id);
+			//				var seatId = $(".seatId").val(this.settings.id);
+							var seatinfoId2 = $(".seatinfoId").val();
+							var area2 = $(".area").text();
+							
+							/*座位预约状态*/
+							mui.ajax(url+'lookresidueseat.php',{
+								data:{
+									seatid : seatinfoId2,
+									area : area2
+								}, 
+								dataType:'json',//服务器返回json格式数据          
+								type:'post',//HTTP请求类型
+								timeout:10000,//超时时间设置为10秒；  
+								success:function(data){
+//									console.log(data);          
+									var html = template('state',data);
+									document.getElementById('seatstate').innerHTML = html;    
+								},
+								error:function(xhr,type,errorThrown){
+								}
+							});
+							return 'selected';
+						} else if (this.status() == 'selected') { //已选中
+								//更新数量
+								$counter.text(sc.find('selected').length-1);
+								//更新总计
+								$total.text(recalculateTotal(sc)-price);
+									
+								//删除已预订座位
+								$('#cart-item-'+this.settings.id).remove();
+								//可选座
+								i = 0;
+								$(".seatinfo").val("");
+								return 'available';
+						} else if (this.status() == 'unavailable') { //已售出
+							return 'unavailable';
+						} else {
+							mui.toast("对不起，只能预约一个座位");
+							return this.style();
+						}
+					}
+				});
+				
+				
+				function recalculateTotal(sc) {
+					var total = 0;
+					sc.find('selected').each(function () {
+						total += price;
+					});
+					return total;
+				}
+				
+				//获取到座位的id
+				var seatid = plus.webview.currentWebview().aid;
+				var sjobnum = localStorage.getItem('studentjobnum');
+//				console.log(sjobnum);
+				var sBtn = document.getElementById('submitBtn');
+				var getDate = "";
+				var timeSolt = "";
+				/*给学号值*/
+				$(".jobnum").val(sjobnum);
+				
+				var cityPicker=new mui.PopPicker({
+					layer: 2
+				});
+				cityPicker.setData(scribeDate);
+				var cityResult=document.getElementById("cityResult");
+				document.getElementById("showdatePicker").addEventListener('tap',function(){
+					cityPicker.show(function(items){
+						cityResult.innerText = "您选择的时间是:" + items[0].text + " " + items[1].text;
+						getDate = items[0].text;
+						timeSolt = items[1].value;
+					});
+				},false);
+				
+				mui.ajax(url+'havebeenbooked.php',{
+					data:{
+					},     
+					dataType:'json',//服务器返回json格式数据
+					type:'post',//HTTP请求类型
+					timeout:10000,//超时时间设置为10秒；
+					success:function(data){
+						var list = data.list;
+						for (var i=0;i<list.length;i++) {
+							var element = list[i];
+//							console.log(element);
+							if(element.amstate=='1'&&element.pmstate=='1'&&element.nightstate=='1'){
+								sc.get([element.seatId]).status('unavailable');
+							}
+						}
+					},  
+					error:function(xhr,type,errorThrown){
+						
+					}
+				});
+				
+				
+				/*确定预约*/
+				sBtn.addEventListener('tap',function(){
+					var jobnum = $(".jobnum").val();
+					var name = $(".name").val();
+					var setDate = getDate;
+					var settimeSolt = timeSolt;
+					var seatinfoId = $(".seatinfoId").val();
+					var area = $(".area").text();
+					mui.ajax(url+'subscribeSeat.php',{
+						data:{
+							aid:seatid,
+							jobnum:jobnum,
+							name:name,
+							timeSolt:settimeSolt,
+							setDate : setDate,
+							seatinfoId : seatinfoId,
+							area : area,   
+						},
+						type:'post',//HTTP请求类型
+						timeout:10000,//超时时间设置为10秒；
+						success:function(data){
+							//服务器返回响应，根据响应结果，分析是否登录成功；
+							/*
+							 * 关于数字的解释
+							 * 0----预约失败
+							 * 1----预约成功
+							 * 2----请输入学号
+							 * 3----请输入姓名
+							 * 4----请输入日期
+							 * 5----请输入时间段
+							 * 6----积分不足
+							 * 7----该座位已经被预约
+							 * 8----积分不够
+							 * 9----学号不存在
+							 * 10----对不起，您预约的时间已经超过有效时间
+							 * */
+							if(data == 0){
+								mui.toast("预约失败!");
+							}else if(data == 1){
+								mui.toast("预约成功!");
+								mui.openWindow({
+								  id : 'main',
+								  url : 'main.html',
+								});
+							}else if(data == 2){
+								mui.toast("请输入学号!");
+							}else if(data == 3){
+								mui.toast("请输入姓名!");
+							}else if(data == 4){
+								mui.toast("请输入日期!");
+							}else if(data == 5){
+								mui.toast("请输入时间段!");
+							}else if(data == 6){
+								mui.toast("对不起,积分不足");
+							}else if(data == 7){
+								mui.toast("对不起，该座位已经被预约");
+							}else if(data == 10){
+								mui.toast("对不起，只能预约一次");
+							}
+//							console.log(data); 
+						},
+						error:function(xhr,type,errorThrown){
+							//异常处理；
+							console.log(type);
+						}
+					});
+				});
+				/*页面获取具体座位有关的JSON*/
+				mui.ajax(url+'seatInfo.php',{
+					data:{
+						seatid : seatid,
+					},
+					dataType:'json',
+					type:'POST',//HTTP请求类型
+					timeout:10000,//超时时间设置为10秒；
+					success:function(data){
+						var html = template('list',data);
+						document.getElementById('seatList').innerHTML = html;
+					},
+					error:function(xhr,type,errorThrown){
+						//异常处理；
+						console.log(type);
+					}
+				});
+			});
+		</script>
+	</body>
+
+</html>

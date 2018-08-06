@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.min.css" rel="stylesheet" />
+	</head>
+
+	<body>
+		<div class="mui-content">
+            <nav id="bar" class="mui-bar mui-bar-tab">
+                <a class="mui-tab-item mui-active" href="seatInfo.html" data-id="seatInfo">
+                    <span class="mui-icon mui-icon-bars"></span>
+                    <span class="mui-tab-label">预约</span>
+                </a>
+                <a class="mui-tab-item" href="lookseatScribe.html" data-id="lookseatScribe">
+                    <span class="mui-icon mui-icon-search"></span>
+                    <span class="mui-tab-label">查看座位预约</span>
+                </a>
+                <a class="mui-tab-item" href="personInfo.html" data-id="personInfo">
+                    <span class="mui-icon mui-icon-person"></span>
+                    <span class="mui-tab-label">个人信息</span>
+                </a>
+            </nav>
+        </div>
+		
+		<script src="js/mui.min.js"></script>
+		<script src="js/jquery-2.1.4.min.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			mui.init();
+			
+			/**
+			 * 创建webview
+			 */
+			
+			mui.plusReady(function() {
+				var self_ = plus.webview.currentWebview();
+                var current = '';
+                var styles = {
+                    top: '0',
+                    bottom: '51px'
+                };
+                var tabsConfig = {
+                    seatInfo: {
+                        url: 'seatInfo.html',
+                        styles: styles,
+                        default: true
+                    },
+                    lookseatScribe: {
+                        url: 'lookseatScribe.html',
+                        styles: styles
+                    },
+                    personInfo: {
+                        url: 'personInfo.html',
+                        styles: styles
+                    }
+                    
+                };
+                var tabs = {};
+                for (id in tabsConfig) {
+                    tabs[id] = plus.webview.create(tabsConfig[id].url, id, tabsConfig[id].styles);
+                    if (tabsConfig[id]['default']) {
+                        self_.append(tabs[id]);
+                        current = id;
+                    }
+                }
+                
+                mui('#bar').on('tap', 'a', function(e) {
+                    if (current == this.dataset.id) {
+                        mui.fire(tabs[current], 'scroll2top');
+                        return;
+                    }
+                    tabs[this.dataset.id].show();
+                    tabs[current].hide();
+                    current = this.dataset.id;
+                });
+                
+                
+                  var self = plus.webview.currentWebview().Junmber;
+				localStorage.setItem('studentjobnum',self);
+				
+				
+//				$("#logout").click(function(){
+//					location.href = "index.html";
+////					localStorage.clear();
+//				})
+			});
+		</script>
+	</body>
+
+</html>

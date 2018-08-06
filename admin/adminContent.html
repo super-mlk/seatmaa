@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <style>
+        *{margin: 0;padding: 0;}
+        .container{margin: 100px auto;}
+        tr th{text-align: center;}
+        tr td{text-align: center;}
+    </style>
+</head>
+<body>
+    <div class="container" id="app">
+        <nav class="navbar navbar-inverse" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">图书馆座位管理-管理员</a>
+                </div>
+                <div>
+                    <ul class="nav navbar-nav">
+                        <li><a href="Administrator.html">登录</a></li>
+                        <li class="active"><a href="#">查看学生预约信息</a></li>
+                        <li><a href="scribestateCount.html">预约总计</a></li>
+                        <li><a href="clearscribestate.html">清除数据库预约信息</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="panel panel-warning">
+            <div class="panel-heading">
+                <h3 class="panel-title">查看学生预约信息</h3>
+            </div>
+            <div class="panel-body">
+				 <table class="table" id="table">
+			        <caption>查看学生预约信息</caption>
+			        <thead>
+			            <tr>
+			                <th>地点索引</th>
+			                <th>地点坐标</th>
+			                <th>地点位置</th>
+			                <th>8:00 ~ 10:30</th>
+			                <th>预约第一时间段的工号</th>
+			                <th>13:00 ~ 16:00</th>
+			                <th>预约第二时间段的工号</th>
+			                <th>18:00 ~ 20:30</th>
+			                <th>预约第三时间段的工号</th>
+			            </tr>
+			        </thead>
+			        <tbody>
+			            <tr v-for="(item,index) in info" class="list">
+			                <td>{{item.aId}}</td>
+			                <td>{{item.aarea}}</td>
+			                <td>{{item.aSeat}}</td>
+			                <td class="bgred">{{item.amstate}}</td>
+			                <td>{{item.amjobnum}}</td>
+			                <td>{{item.pmstate}}</td>
+			                <td>{{item.pmjobnum}}</td>
+			                <td>{{item.nightstate}}</td>
+			                <td>{{item.nightjobnum}}</td>
+			            </tr>
+			        </tbody>
+			    </table>                
+            </div>
+        </div>
+    </div>
+	
+	<script src="../js/proporiesUrl.js" type="text/javascript" charset="utf-8"></script>
+
+    <script>
+        let vm = new Vue({
+            el : '#app',
+			created(){
+               this.getData();
+            },            
+            methods:{
+				getData(){
+                   axios.get(url+'lookstudentscribeinfo.php').then(res=>{
+                       this.info = res.data;
+                       if(res.data == 2 || res.data == 3){
+                           alert("对不起，数据错误，请刷新页面");
+                       }
+                   },err=>{
+                       console.log(err);
+                   });
+               }
+            },
+ 			data:{
+               info:[]
+            },            
+        });
+    </script>
+</body>
+</html>

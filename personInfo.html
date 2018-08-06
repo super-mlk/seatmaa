@@ -1,0 +1,150 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.min.css" rel="stylesheet" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+		    <h1 class="mui-title">个人信息</h1>
+		    <a id="logout" class="mui-icon mui-icon-minus mui-pull-right"></a>
+		</header>
+		
+		<div class="mui-content" id="personList">
+			<script type="text/html" id="person">
+			    {{each person as person}}
+			        <ul class="mui-table-view" id="{{person.sId}}">
+				        <li class="mui-table-view-cell mui-media">
+				            <a href="javascript:;">
+				                <img class="mui-media-object mui-pull-left" src="{{person.sPic}}">
+				                <div class="mui-media-body">
+				                    	姓名:{{person.sName}}
+				                    <p class="mui-ellipsis">名人名言:{{person.sSaying}}</p>
+				                </div>
+				            </a>
+				        </li>
+				    </ul>
+				    <ul class="mui-table-view">
+			    		<li class="mui-table-view-cell">
+		            		学号:{{person.sJobnum}}
+			            </li>
+			    	    <li class="mui-table-view-cell">
+		                   	性别:{{person.sSex}}
+			            </li>
+			            <li class="mui-table-view-cell">
+		                   	年龄:{{person.sAge}}
+			            </li>
+			            <li class="mui-table-view-cell">
+		            		年级:{{person.sGrade}}
+			            </li>
+			            <li class="mui-table-view-cell">
+			            	剩余积分:{{person.jifen}}
+			            </li>
+			        </ul>
+		    	{{/each}}
+		    </script>
+		</div>
+		
+		<script src="js/mui.min.js"></script>
+		<script src="js/template-web.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/jquery-2.1.4.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/proporiesUrl.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			var sutdentJobnum = localStorage.getItem('studentjobnum');
+//			console.log("person"+sutdentJobnum);
+			mui.init({
+				pullRefresh: {
+					container: '#personList',
+					down: {
+						style:'circle',
+						callback: pulldownRefresh
+					},
+					up: {
+						auto:true,
+						contentrefresh: '正在加载...',
+						callback: pullupRefresh
+					}
+				}
+			});
+			
+			var count = 0;
+			function pullupRefresh() {
+				setTimeout(function() {
+					mui.ajax(url+'personInfo.php',{
+						data:{
+							sJobnum:sutdentJobnum,
+						},
+						dataType:'json',//服务器返回json格式数据
+						type:'post',//HTTP请求类型
+						timeout:10000,//超时时间设置为10秒；
+						success:function(data){
+							//服务器返回响应，根据响应结果，分析是否登录成功；
+							var html = template('person',data);
+							document.getElementById('personList').innerHTML = html;
+						},
+						error:function(xhr,type,errorThrown){
+							//异常处理；
+							console.log(type);
+						}
+					});
+				}, 1500);
+			}
+			
+			function addData() {
+				var table = document.body.querySelector('.mui-table-view');
+				var cells = document.body.querySelectorAll('.mui-table-view-cell');
+				for(var i = cells.length, len = i + 5; i < len; i++) {
+					var li = document.createElement('li');
+					li.className = 'mui-table-view-cell';
+					li.innerHTML = '<a class="mui-navigate-right">Item ' + (i + 1) + '</a>';
+					//下拉刷新，新纪录插到最前面；
+					table.insertBefore(li, table.firstChild);
+				}
+			}
+			/**
+			 * 下拉刷新具体业务实现
+			 */
+			function pulldownRefresh() {
+				mui.ajax(url+'personInfo.php',{
+					data:{
+						sJobnum:sutdentJobnum,
+					},
+					dataType:'json',//服务器返回json格式数据
+					type:'post',//HTTP请求类型
+					timeout:10000,//超时时间设置为10秒；
+					success:function(data){
+						//服务器返回响应，根据响应结果，分析是否登录成功；
+						var html = template('person',data);
+						document.getElementById('personList').innerHTML = html;
+					},
+					error:function(xhr,type,errorThrown){
+						//异常处理；
+						console.log(type);
+					}
+				});
+			}
+			
+			document.getElementById("logout").addEventListener('tap', function() {
+				var btnArray = ['否', '是'];
+				mui.confirm('确定退出？', '注销', btnArray, function(e) {
+					if (e.index == 1) {
+						plus.runtime.quit();
+					} else {
+						mui.toast("您取消了注销");
+					}
+				})
+			}); 
+//			document.getElementById("logout").addEventListener('tap',function(){
+//				location.href = "index.html";
+//				plus.runtime.quit();
+//			});
+			
+		
+		</script>
+	</body>
+
+</html>

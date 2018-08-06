@@ -1,0 +1,172 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.min.css" rel="stylesheet" />
+	<body>
+		<header class="mui-bar mui-bar-nav">
+		    <a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+		    <h1 class="mui-title">注册界面</h1>
+		</header>
+		<div class="mui-content">
+		    <form id="ff" class="mui-input-group">
+			    <div class="mui-input-row">
+			        <label>学号</label>
+			    	<input type="text" class="mui-input-clear jobnum" placeholder="请输入学号" name="jobnum">
+			    </div>
+			    <div class="mui-input-row">
+			        <label>姓名</label>
+			    	<input type="text" class="mui-input-clear name" placeholder="请输入姓名" name="name">
+			    </div>
+			    <div class="mui-input-row">
+			        <label>密码</label>
+			        <input type="password" class="mui-input-password password" placeholder="请输入密码" name="password">
+			    </div>
+			    <div class="mui-input-row">
+			        <label>第二次密码</label>
+			        <input type="password" class="mui-input-password againpassword" placeholder="请再一次输入密码" name="againpassword">
+			    </div>
+			    <div class="mui-input-row">
+			        <label>年龄</label>
+			        <input type="number" class="mui-input-clear age" placeholder="请输入年龄" name="age" min="18" max="100">
+			    </div>
+			    <div class="mui-input-row">
+			        <label>年级</label>
+			        <input type="number" class="mui-input-clear grade" placeholder="请输入年级，数字形式" name="grade" min="1" max="4">
+			    </div>
+			    <div class="mui-input-row">
+			        <label>手机号码</label>
+			        <input type="number" class="mui-input-clear phone" placeholder="请输入手机号码" name="phone">
+			    </div>
+			    <h5 class="mui-content-padded">性别</h5>
+			    <div class="mui-input-row mui-radio sex">
+					<label>男</label>
+					<input name="sex" type="radio" value="男" checked>
+				</div>
+				<div class="mui-input-row mui-radio sex" >
+					<label>女</label>
+					<input name="sex" type="radio" value="女">
+				</div>
+				 <div class="mui-input-row">
+			        <label>名人名言</label>
+			        <input type="text" class="mui-input-clear saying" placeholder="请输入您的名言" name="saying">
+			    </div>
+				 <div class="mui-input-row">
+			        <label>头像</label>
+			        <input id="tx" type="file" class="mui-input-clear pic" style="margin-top: 5px;" name="pic">
+			    </div>
+			    <div class="mui-button-row">
+			        <button type="button" class="mui-btn mui-btn-primary" id="registerBtn">注册</button>
+			        <button type="reset" class="mui-btn mui-btn-danger" >取消</button>
+			    </div>
+			</form>
+		</div>
+		<nav class="mui-bar mui-bar-tab">
+		    <a class="mui-tab-item mui-active">
+		        <span class="mui-icon mui-icon-contact mui-active"></span>
+		        <span class="mui-tab-label">注册</span>
+		    </a>
+		    <a class="mui-tab-item" id="login">
+		        <span class="mui-icon mui-icon-qq"></span>
+		        <span class="mui-tab-label">登录</span>
+		    </a>
+		</nav>
+		
+		<script src="js/mui.min.js"></script>
+		<script src="js/jquery-2.1.4.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/proporiesUrl.js" type="text/javascript" charset="utf-8"></script>
+		
+		<script type="text/javascript">
+			mui.init();
+			mui.plusReady(function(){
+				var registerBtn = document.getElementById("registerBtn");
+				registerBtn.addEventListener('tap',function(){
+					var jobnum = $(".jobnum").val();
+					var name = $(".name").val();
+					var password = $(".password").val();
+					var againpassword = $(".againpassword").val();
+					var age = $(".age").val();
+
+					var grade = $(".grade").val();
+					var phone = $(".phone").val();
+					var sex = $(".sex").val();
+					/*获取男和女的值*/
+					var sex = $("input[type='radio']:checked").val();
+					var saying = $(".saying").val();
+					var pic = $(".pic").val();
+					var formData=new FormData();
+					formData.append('jobnum',jobnum);
+					formData.append('name',name); 
+					formData.append('password',password);
+					formData.append('againpassword',againpassword);
+					formData.append('age',age);
+					formData.append('grade',grade);
+					formData.append('phone',phone);
+					formData.append('sex',sex);
+					formData.append('saying',saying);
+					formData.append('pic', $('#tx')[0].files[0]);  
+					 
+					$.ajax({
+			          url: url+'checkRegister.php' ,  
+			          type: 'POST',  
+			          data:formData,
+			          async: true,  
+			          cache: false,  
+			          contentType: false,  
+			          processData: false,  
+			          success: function (data) {
+			          	console.log(data);
+			          	if(data == '1'){
+			          		mui.toast('注册成功');
+		          			mui.openWindow({
+		          				url : 'login.html',
+		          				id : 'login'
+		          			});
+			          	}else if(data == '0'){
+			          		mui.toast('注册失败');
+			          	}else if(data == '10'){
+			          		mui.toast('所有字段不能为空');
+			          	}else if(data == '11'){
+			          		mui.toast('两次密码不一样');
+			          	}else if(data == '2'){
+			          		mui.toast('账号已经存在');
+			          	}else if(data == '3'){
+			          		mui.toast('图片上传失败!');
+			          		mui.openWindow({
+		          				url : 'login.html',
+		          				id : 'login'
+		          			});
+			          	}else if(data == '4'){
+			          		mui.toast("年级超过范围");
+			          	}else if(data == '5'){
+			          		mui.toast("年纪不在18到60岁之间");
+			          	}else if(data == '12'){
+			          		mui.toast("请输入中文名字");
+			          	}else if(data == '13'){
+			          		mui.toast("请输入正确的手机号码");
+			          	}
+			          },  
+			          error: function (data) {            
+			          }  
+			      	}); 
+				});
+				
+				//注销
+				var login = document.getElementById("login");
+				login.addEventListener('tap',function(){
+					mui.openWindow({
+						url : 'login.html',
+						id  : 'login',
+						createNew:true,
+					});
+					localStorage.clear();
+				});
+				
+			})
+		</script>
+	</body>
+
+</html>
